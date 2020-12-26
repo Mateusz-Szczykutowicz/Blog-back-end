@@ -1,13 +1,14 @@
+import { Response, Request, NextFunction } from "express";
 import config from "../../config";
 import User from "../database/models/User";
 import sha256 from "sha256";
-import { DocumentQuery } from "mongoose";
 
 interface _Token {
     tokens: object;
     create(payload: string, signature: string, time: number): void;
     getAll(): object;
     check(payload: string, signature: string): boolean;
+    delete(payload: string): void;
 }
 
 class Token implements _Token {
@@ -27,12 +28,15 @@ class Token implements _Token {
         }
         return false;
     }
+    delete(payload: string) {
+        delete this.tokens[payload];
+    }
 }
 
 const token = new Token();
 
 export = {
-    async createToken(req: any, res: any) {
+    async createToken(req: Request, res: Response) {
         if (!req.body) {
             return res
                 .status(406)
@@ -49,7 +53,7 @@ export = {
         );
         const user = await User.findOne({ login, password }, "signature");
         if (user) {
-            const expireTime: number = 1;
+            const expireTime: number = 30;
             const signature = user.get("signature");
             const payload: string = sha256(
                 `#${Math.random()}-mde${config.payloadSalt}!a${signature}`
@@ -59,7 +63,7 @@ export = {
             res.setHeader("Set-Cookie", [
                 `token=${`${payload}.${signature}`}; max-age=${
                     60 * expireTime
-                }; path=/`,
+                }; path=/; HttpOnly;`,
             ]);
             return res.status(200).json({
                 status: 200,
@@ -71,7 +75,7 @@ export = {
             .status(406)
             .json({ statu: 406, message: "Wrong login or password" });
     },
-    async checkToken(req: any, res: any, next: any) {
+    async checkToken(req: Request, res: Response, next: NextFunction) {
         if (!req.cookies.token) {
             return res
                 .status(401)
@@ -95,5 +99,17 @@ export = {
         return res
             .status(401)
             .json({ status: 401, message: "You are not logging in" });
+    },
+    deleteToken(req: Request, res: Response) {
+        if (!req.cookies.token) {
+            return res
+                .status(401)
+                .json({ status: 401, message: "You are not logging in" });
+        }
+        const authToken = req.cookies.token.split(".");
+        const payload = authToken[0];
+        token.delete(payload);
+        res.setHeader("Set-Cookie", [`token=empty; path=/; max-age=1`]);
+        res.status(200).json({ status: 200, message: "Logout success" });
     },
 };

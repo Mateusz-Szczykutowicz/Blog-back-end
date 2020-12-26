@@ -1,10 +1,10 @@
-import { promises } from "fs";
+import { Request, Response } from "express";
 import Article from "../database/models/Article";
 import messages from "../middlewares/messages";
 
 export = {
     user: {
-        getAllArticles(req: any, res: any): void {
+        getAllArticles(req: Request, res: Response): void {
             Article.find(
                 {},
                 "author title slug content tags createdAt",
@@ -30,7 +30,7 @@ export = {
                 }
             );
         },
-        getOneArticle(req: any, res: any) {
+        getOneArticle(req: Request, res: Response): void {
             const slug = req.params.name;
             Article.findOne(
                 { slug },
@@ -58,7 +58,7 @@ export = {
                 }
             );
         },
-        addArticle(req: any, res: any) {
+        addArticle(req: Request, res: Response): Response {
             req.body = req.body || {};
 
             // [tmp] user(author) tymczasowo na stałe
@@ -79,7 +79,7 @@ export = {
             article.save();
             return res.status(201).json({ message: "Article added" });
         },
-        async updateArticle(req: any, res: any) {
+        async updateArticle(req: Request, res: Response) {
             req.body = req.body || {};
             const slug = req.params.name;
             const article = await Article.findOne({ slug });
@@ -107,7 +107,7 @@ export = {
                 });
             });
         },
-        deleteArticle(req: any, res: any) {
+        deleteArticle(req: Request, res: Response): void {
             const slug = req.params.name;
             Article.findOneAndDelete({ slug }, (err, resp) => {
                 if (err) {

@@ -3,6 +3,7 @@ import express from "express";
 import morgan from "morgan";
 import fileUpload from "express-fileupload";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 //- Files
 import config from "./config";
@@ -34,6 +35,7 @@ const morganDev = morgan("dev");
 app.use(morganDev);
 
 //- Use production middleware
+app.use(cors());
 app.use(cookieParser());
 app.use(
     fileUpload({
