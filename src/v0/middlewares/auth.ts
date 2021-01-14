@@ -34,10 +34,6 @@ class Token implements _Token {
     }
 }
 
-interface _Pin {}
-
-class Pin implements _Pin {}
-
 const token = new Token();
 
 export = {
@@ -147,5 +143,5 @@ export = {
             }
         });
     },
-    isBlocked(req: Request, res: Response, next: NextFunction) {},
+    isNotBlocked(req: Request, res: Response, next: NextFunction) {},
 };

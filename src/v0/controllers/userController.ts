@@ -233,8 +233,4 @@ export = {
                     .json({ status: 500, message: messages.status[500] });
             });
     },
-    getRecoverLink(req: Request, res: Response) {},
-    changeRecoverPassword(req: Request, res: Response) {
-        //* PIN["123456"] = "User_ID";
-    },
 };

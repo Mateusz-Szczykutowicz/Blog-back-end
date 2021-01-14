@@ -8,6 +8,7 @@ import User from "../database/models/User";
 import messages from "../middlewares/messages";
 import sha256 from "sha256";
 import config from "../../config";
+import recoverPassword from "../middlewares/recoverPassword";
 
 const router = express.Router();
 
@@ -20,6 +21,11 @@ router.post("/login", auth.createToken);
 //? Logout user - POST /api/v0/users/login
 router.post("/logout", auth.deleteToken);
 
+//? Get recover link - POST /api/v0/users/recover
+router.post("/recover", recoverPassword.sendLink);
+
+//? Change recover password - PATCH /api/v0/users/recover
+router.patch("/recover", recoverPassword.change);
 
 //? Get all users - GET /api/v0/users
 router.get("/", auth.checkToken, auth.isAdmin, userController.getAllUsers);
