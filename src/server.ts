@@ -9,6 +9,7 @@ import cors from "cors";
 import config from "./config";
 import db from "./v0/database/db";
 import messages from "./v0/middlewares/messages";
+import errorMiddleware from "./v0/middlewares/error";
 import articleRoute from "./v0/routes/articleRoute";
 import userRoute from "./v0/routes/userRoute";
 
@@ -16,6 +17,8 @@ import userRoute from "./v0/routes/userRoute";
 import Article from "./v0/database/models/Article";
 import auth from "./v0/middlewares/auth";
 import User from "./v0/database/models/User";
+import fs from "fs";
+import path from "path";
 
 const app = express();
 
@@ -57,16 +60,13 @@ app.use("/api/v0/articles", articleRoute);
 app.use("/api/v0/users", userRoute);
 
 // [tmp] Testowy endpoint
-app.post("/test", auth.checkToken, async (req, res) => {
-    const user = await User.findOne({ ID: req.body.id });
-    console.log(user);
+app.post("/test", async (req, res) => {
+    req.body = req.body || {};
     res.send("test");
     // res.status(500).send({ message: "Error" });
 });
 
 //? Error page
-app.use((req, res) => {
-    res.status(404).send({ status: 404, message: "404 - Not found" });
-});
+app.use(errorMiddleware.notFound);
 
 export = app;

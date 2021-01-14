@@ -2,6 +2,7 @@ import { Response, Request, NextFunction } from "express";
 import config from "../../config";
 import User from "../database/models/User";
 import sha256 from "sha256";
+import messages from "./messages";
 
 interface _Token {
     tokens: object;
@@ -32,6 +33,10 @@ class Token implements _Token {
         delete this.tokens[payload];
     }
 }
+
+interface _Pin {}
+
+class Pin implements _Pin {}
 
 const token = new Token();
 
@@ -68,7 +73,7 @@ export = {
             return res.status(200).json({
                 status: 200,
                 message: "Login - success",
-                // token: `${payload}.${signature}`, //* W razie złego zachowywania się aplikacji przywrócić
+                token: `${payload}.${signature}`, //* W razie złego zachowywania się aplikacji przywrócić
             });
         }
         return res
@@ -90,7 +95,12 @@ export = {
                 .json({ status: 401, message: "You are not logging in" });
         }
         if (token.check(payload, signature)) {
-            const user: any = await User.findOne({ signature }, "ID");
+            const user = await User.findOne({ signature }, "ID");
+            if (!user) {
+                return res
+                    .status(401)
+                    .json({ status: 401, message: "You are not logging in" });
+            }
             const ID = user.get("ID");
             req.body = req.body || {};
             req.body.id = ID;
@@ -112,4 +122,30 @@ export = {
         res.setHeader("Set-Cookie", [`token=empty; path=/; max-age=1`]);
         res.status(200).json({ status: 200, message: "Logout success" });
     },
+    isAdmin(req: Request, res: Response, next: NextFunction) {
+        const id = req.body.id;
+        console.log(id);
+        User.findOne({ ID: id }, "admin", (err, resp) => {
+            if (err) {
+                console.log("> [error] ", err);
+                return res
+                    .status(500)
+                    .json({ status: 500, message: messages.status[500] });
+            }
+            if (!resp) {
+                return res
+                    .status(404)
+                    .json({ status: 404, message: "User not found!" });
+            } else {
+                if (resp.get("admin")) {
+                    return next();
+                } else {
+                    return res
+                        .status(403)
+                        .json({ status: 403, message: "Access denied!" });
+                }
+            }
+        });
+    },
+    isBlocked(req: Request, res: Response, next: NextFunction) {},
 };

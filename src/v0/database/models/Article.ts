@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 let Arcticle = new mongoose.Schema({
-    author: String,
+    author: { type: String, lowercase: true },
     title: String,
     slug: { type: String, slug: "title", slugPaddingSize: 2, unique: true },
     tags: Array,

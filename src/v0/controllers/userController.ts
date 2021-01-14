@@ -4,10 +4,15 @@ import User from "../database/models/User";
 import messages from "../middlewares/messages";
 import sha256 from "sha256";
 
+// [tmp]
+import Article from "../database/models/Article";
+import auth from "../middlewares/auth";
+
 export = {
     getAllUsers(req: Request, res: Response) {
         User.find({}, "login email", (err, resp) => {
             if (err) {
+                console.log("> [error] ", err);
                 return res
                     .status(500)
                     .json({ status: 500, message: messages.status[500] });
@@ -86,5 +91,150 @@ export = {
                 .status(201)
                 .json({ status: 201, message: "Register success" });
         });
+    },
+    async changeEmail(req: Request, res: Response) {
+        if (!req.body) {
+            return res
+                .status(406)
+                .json({ status: 406, message: "Body is empty" });
+        }
+        if (!req.body.email) {
+            return res
+                .status(406)
+                .json({ status: 406, message: "Email field is empty" });
+        }
+        const email = req.body.email;
+        const token: string = req.cookies.token || "";
+        const signature: string = token.split(".")[1];
+        const user = await User.findOne({ signature }, "email");
+        if (!user) {
+            return res
+                .status(404)
+                .json({ status: 404, message: "User not found!" });
+        }
+        user.set("email", email);
+        user.save()
+            .then(() => {
+                return res
+                    .status(200)
+                    .json({ status: 200, message: "Email changed" });
+            })
+            .catch((err) => {
+                console.log(err);
+                return res.status(500).json({
+                    status: 500,
+                    message: "Erorr! Contact the administrator",
+                });
+            });
+    },
+    async changePassword(req: Request, res: Response) {
+        if (!req.body) {
+            return res
+                .status(406)
+                .json({ status: 406, message: "Body is empty" });
+        }
+        if (!req.body.newPassword || !req.body.password) {
+            return res
+                .status(406)
+                .json({ status: 406, message: "Password field is empty" });
+        }
+        if (req.body.newPassword === req.body.password) {
+            return res
+                .status(406)
+                .json({ status: 406, message: "Passwords are the same" });
+        }
+        const password = sha256(
+            `#${req.body.password}-!${config.passwordSalt}`
+        );
+        const newPassword = sha256(
+            `#${req.body.newPassword}-!${config.passwordSalt}`
+        );
+        const token: string = req.cookies.token || "";
+        const signature: string = token.split(".")[1];
+        const user = await User.findOne({ signature }, "password");
+        if (!user) {
+            return res
+                .status(404)
+                .json({ status: 404, message: "User not found!" });
+        }
+        if (user.get("password") !== password) {
+            return res
+                .status(406)
+                .json({ status: 406, message: "Wrong password" });
+        }
+        user.set("password", newPassword);
+        user.save()
+            .then(() => {
+                return res
+                    .status(200)
+                    .json({ status: 200, message: "Pasword changed" });
+            })
+            .catch((err) => {
+                console.log(err);
+                return res.status(500).json({
+                    status: 404,
+                    message: "Erorr! Contact the administrator",
+                });
+            });
+    },
+    async deleteOneUser(req: Request, res: Response) {
+        const login = req.params.user.toLowerCase();
+        const user = await User.deleteOne({ login });
+        if (user.deletedCount === 0) {
+            return res
+                .status(404)
+                .json({ status: 404, message: "User not found!" });
+        }
+        return res
+            .status(200)
+            .json({ status: 200, message: "Account deleted" });
+    },
+    deleteAccount(req: Request, res: Response) {
+        const ID = req.body.id;
+        console.log(ID);
+        User.deleteOne({ ID }, (err) => {
+            if (err) {
+                return res
+                    .status(500)
+                    .json({ status: 500, message: messages.status[500] });
+            }
+            res.status(200).json({ status: 200, message: "Account deleted" });
+        });
+    },
+    async blockAccount(req: Request, res: Response) {
+        const login = req.params.user;
+        const user = await User.findOne({ login }, "blocked admin");
+        if (!user) {
+            return res
+                .status(404)
+                .json({ status: 404, message: "User not found!" });
+        }
+        if (user.get("admin")) {
+            return res
+                .status(403)
+                .json({ status: 403, message: "Can't block administrator!" });
+        }
+        user.get("blocked")
+            ? user.set("blocked", false)
+            : user.set("blocked", true);
+        user.save()
+            .then(() => {
+                return res.status(200).json({
+                    status: 200,
+                    message: `${
+                        user.get("blocked") ? "User blocked" : "User unblocked"
+                    }`,
+                });
+            })
+            .catch((err) => {
+                console.log(">[error] ", err);
+                return res
+                    .status(500)
+                    .json({ status: 500, message: messages.status[500] });
+            });
+    },
+    getRecoverLink(req: Request, res: Response) {},
+    changeRecoverPassword(req: Request, res: Response) {
+        //* PIN["123456"] = "User_ID";
     },
 };

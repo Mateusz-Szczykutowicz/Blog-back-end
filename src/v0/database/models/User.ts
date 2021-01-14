@@ -31,6 +31,14 @@ let User = new mongoose.Schema({
         type: Date,
         default: new Date(),
     },
+    admin: {
+        type: Boolean,
+        default: false,
+    },
+    blocked: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 export = mongoose.model("User", User);
