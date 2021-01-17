@@ -13,24 +13,24 @@ interface _Token {
 }
 
 class Token implements _Token {
-    tokens: any = {};
+    tokens = new Map();
     create(payload: string, signature: string, time: number): void {
-        this.tokens[payload] = signature;
+        this.tokens.set(payload, signature);
         setTimeout(() => {
-            delete this.tokens[payload];
+            this.tokens.delete(payload);
         }, time * 1000 * 60);
     }
     getAll(): object {
         return this.tokens;
     }
     check(payload: string, signature: string): boolean {
-        if (this.tokens[payload] === signature) {
+        if (this.tokens.get(payload) === signature) {
             return true;
         }
         return false;
     }
     delete(payload: string) {
-        delete this.tokens[payload];
+        this.tokens.delete(payload);
     }
 }
 
@@ -120,7 +120,6 @@ export = {
     },
     isAdmin(req: Request, res: Response, next: NextFunction) {
         const id = req.body.id;
-        console.log(id);
         User.findOne({ ID: id }, "admin", (err, resp) => {
             if (err) {
                 console.log("> [error] ", err);

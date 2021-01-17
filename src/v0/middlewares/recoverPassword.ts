@@ -3,44 +3,40 @@ import User from "../database/models/User";
 import sha256 from "sha256";
 import config from "../../config";
 import messages from "../middlewares/messages";
+import { type } from "os";
 const nodemailer = require("nodemailer");
 
 interface _Pin {
     pins: object;
-    getID(pin: number): string;
-    createPin(ID: string): number;
-    deletePin(pin: number): void;
+    getID(pin: string): string;
+    createPin(ID: string): string;
+    deletePin(pin: string): void;
 }
 
 class Pin_ implements _Pin {
-    pins: Array<object> = [];
-    getID(pin: number): string {
-        const myPin: any = this.pins.find((value: any) => {
-            return value.pin == pin;
-        });
-        if (!myPin) {
-            return "";
-        }
-        return myPin.ID;
+    // pins: Array<object> = [];
+    pins = new Map();
+    getID(pin: string): string {
+        return this.pins.get(pin);
     }
-    createPin(ID: string): number {
+    createPin(ID: string): string {
         const generatePin = (min: number, max: number) => {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+            return (
+                Math.floor(Math.random() * (max - min + 1)) + min
+            ).toString();
         };
-        const pin: number = generatePin(10000000, 99999999);
-        if (this.pins.findIndex((val: any) => val.pin === pin) !== -1) {
+        const pin: string = generatePin(10000000, 99999999);
+        if (this.pins.has(pin)) {
             return this.createPin(ID);
         }
-
-        this.pins.push({ pin, ID });
+        this.pins.set(pin, ID);
         setTimeout(() => {
-            this.deletePin(pin);
+            this.pins.delete(pin);
         }, 1000 * 60 * 15);
         return pin;
     }
-    deletePin(pin: number): void {
-        const index = this.pins.findIndex((val: any) => val.pin == pin);
-        this.pins.splice(index, 1);
+    deletePin(pin: string): void {
+        this.pins.delete(pin);
     }
 }
 
@@ -58,7 +54,7 @@ const myMail = nodemailer.createTransport({
     },
 });
 
-const sendMail = (email: string, code: number) => {
+const sendMail = (email: string, code: string) => {
     const message = {
         from: "DeltaStorm <noreply@deltastorm.pl>",
         to: `${email}`,

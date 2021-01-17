@@ -12,6 +12,7 @@ import messages from "./v0/middlewares/messages";
 import errorMiddleware from "./v0/middlewares/error";
 import articleRoute from "./v0/routes/articleRoute";
 import userRoute from "./v0/routes/userRoute";
+import commentRoute from "./v0/routes/commentRoute";
 
 // [tmp]
 import Article from "./v0/database/models/Article";
@@ -59,9 +60,27 @@ app.use("/api/v0/articles", articleRoute);
 //? User route
 app.use("/api/v0/users", userRoute);
 
+//? Comment route
+app.use("/api/v0/comments", commentRoute);
+
 // [tmp] Testowy endpoint
 app.post("/test", async (req, res) => {
     req.body = req.body || {};
+    // const x: string = Math.random().toString();
+    // const pin = auth.pin.createPin(x);
+    // console.log(auth.pin.pins);
+    // console.log(pin);
+    // auth.pin.deletePin(pin);
+    // console.log(auth.pin.pins);
+    // console.log(auth.pin.getID(pin));
+    // const tab = [
+    //     { name: "Psikut", ID: 24 },
+    //     { name: "Maniuu", ID: 9 },
+    // ];
+    // let find = tab.findIndex((value) => value.name === "Psikutaa");
+
+    // console.log("find :>> ", find);
+
     res.send("test");
     // res.status(500).send({ message: "Error" });
 });
