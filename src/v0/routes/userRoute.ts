@@ -28,10 +28,15 @@ router.post("/recover", recoverPassword.sendLink);
 router.patch("/recover", recoverPassword.change);
 
 //? Get all users - GET /api/v0/users
-router.get("/", auth.checkToken, auth.isAdmin, userController.getAllUsers);
+router.get("/admin", auth.checkToken, auth.isAdmin, userController.getAllUsers);
 
 //? Get one user via login - GET /api/v0/users/:user
-router.get("/:user", auth.checkToken, auth.isAdmin, userController.getOneUser);
+router.get(
+    "/admin/:user",
+    auth.checkToken,
+    auth.isAdmin,
+    userController.getOneUser
+);
 
 //? Change email - PATCH /api/v0/users/email
 router.patch("/email", auth.checkToken, userController.changeEmail);
@@ -57,5 +62,7 @@ router.patch(
     auth.isAdmin,
     userController.blockAccount
 );
+
+router.get("/isAdmin", auth.checkToken, userController.idAdmin);
 
 export = router;

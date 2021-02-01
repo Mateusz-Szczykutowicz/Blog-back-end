@@ -7,6 +7,7 @@ import sha256 from "sha256";
 // [tmp]
 import Article from "../database/models/Article";
 import auth from "../middlewares/auth";
+import { get } from "../database/db";
 
 export = {
     getAllUsers(req: Request, res: Response) {
@@ -75,8 +76,8 @@ export = {
         let user = await User.findOne({ login });
         if (user) {
             return res
-                .status(404)
-                .json({ status: 404, message: "User already exists" });
+                .status(409)
+                .json({ status: 409, message: "User already exists" });
         }
         const hashPass = sha256(`#${password}-!${config.passwordSalt}`);
         user = new User({ login, password: hashPass, email });
@@ -232,5 +233,14 @@ export = {
                     .status(500)
                     .json({ status: 500, message: messages.status[500] });
             });
+    },
+    async idAdmin(req: Request, res: Response) {
+        const user = await User.findOne({ ID: req.body.id }, "admin");
+        if (!user) {
+            return res
+                .status(404)
+                .json({ status: 404, message: "User not found!" });
+        }
+        res.status(200).json({ status: 200, admin: user.get("admin") });
     },
 };

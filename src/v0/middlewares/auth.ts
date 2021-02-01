@@ -18,7 +18,7 @@ class Token implements _Token {
         this.tokens.set(payload, signature);
         setTimeout(() => {
             this.tokens.delete(payload);
-        }, time * 1000 * 60);
+        }, time * 1000 * 60 * 60);
     }
     getAll(): object {
         return this.tokens;
@@ -54,7 +54,7 @@ export = {
         );
         const user = await User.findOne({ login, password }, "signature");
         if (user) {
-            const expireTime: number = 30;
+            const expireTime: number = 24;
             const signature = user.get("signature");
             const payload: string = sha256(
                 `#${Math.random()}-mde${config.payloadSalt}!a${signature}`
@@ -74,15 +74,24 @@ export = {
         }
         return res
             .status(406)
-            .json({ statu: 406, message: "Wrong login or password" });
+            .json({ status: 406, message: "Wrong login or password" });
     },
     async checkToken(req: Request, res: Response, next: NextFunction) {
-        if (!req.cookies.token) {
+        if (!req.headers.authorization && !req.cookies.token) {
             return res
                 .status(401)
                 .json({ status: 401, message: "You are not logging in" });
         }
-        const authToken = req.cookies.token.split(".");
+        let authToken;
+
+        if (!req.headers.authorization) {
+            authToken = req.cookies.token.split(".");
+        }
+
+        if (!req.cookies.token) {
+            const authorization = req.headers.authorization || "";
+            authToken = authorization.split(".");
+        }
         const payload: string = authToken[0];
         const signature: string = authToken[1];
         if (!payload || !signature) {
@@ -106,13 +115,19 @@ export = {
             .status(401)
             .json({ status: 401, message: "You are not logging in" });
     },
+
     deleteToken(req: Request, res: Response) {
-        if (!req.cookies.token) {
+        let authToken;
+        if (!req.cookies.token && !req.headers.authorization) {
             return res
                 .status(401)
                 .json({ status: 401, message: "You are not logging in" });
         }
-        const authToken = req.cookies.token.split(".");
+        if (!req.headers.authorization) {
+            authToken = req.cookies.token.split(".");
+        } else {
+            authToken = req.headers.authorization.split(".");
+        }
         const payload = authToken[0];
         token.delete(payload);
         res.setHeader("Set-Cookie", [`token=empty; path=/; max-age=1`]);

@@ -23,12 +23,6 @@ import path from "path";
 
 const app = express();
 
-app.listen(config.PORT, () =>
-    console.log(
-        messages.server(`Server is running at http://localhost:${config.PORT}`)
-    )
-);
-
 db.on("error", console.error.bind(console, "connection error"));
 db.once("open", () => {
     console.log(messages.server("DB connection - success"));
@@ -85,7 +79,18 @@ app.post("/test", async (req, res) => {
     // res.status(500).send({ message: "Error" });
 });
 
+//? Connection controll
+app.get("/connection", (req, res) => {
+    res.status(200).json({ status: 200, message: "Connection OK" });
+});
+
 //? Error page
 app.use(errorMiddleware.notFound);
+
+app.listen(config.PORT, () =>
+    console.log(
+        messages.server(`Server is running at http://localhost:${config.PORT}`)
+    )
+);
 
 export = app;
