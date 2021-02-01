@@ -5,8 +5,22 @@ import messages from "../middlewares/messages";
 export = {
     user: {
         getAllArticles(req: Request, res: Response): void {
+            let tagQuery: string[] = [];
+            console.log(req.query.tags);
+            let queryRegexp = new RegExp(`${req.query.title}`, "i");
+            if (req.query.tags) {
+                tagQuery = req.query.tags.toString().split(", ");
+            }
+
             Article.find(
-                {},
+                req.query.tags || req.query.title
+                    ? {
+                          $or: [
+                              { tags: { $all: tagQuery } },
+                              { title: queryRegexp },
+                          ],
+                      }
+                    : {},
                 "author title slug content tags createdAt",
                 (err, resp) => {
                     if (err) {
