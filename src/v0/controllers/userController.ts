@@ -7,11 +7,11 @@ import sha256 from "sha256";
 // [tmp]
 import Article from "../database/models/Article";
 import auth from "../middlewares/auth";
-import { get } from "../database/db";
 
 export = {
     user: {
         async registerUser(req: Request, res: Response) {
+            console.log(req.body);
             if (!req.body) {
                 return res
                     .status(406)

@@ -7,6 +7,7 @@ let Comment = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: new Date(),
+        required: true,
     },
     updatedAt: {
         type: Date,
@@ -16,7 +17,8 @@ let Comment = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    ID: String,
+    ID: { type: String, required: true },
+    authorID: { type: String, required: true },
 });
 
 export = mongoose.model("Comment", Comment);

@@ -29,7 +29,6 @@ export = {
     },
     getAllFromArticle(req: Request, res: Response) {
         const article = req.params.article;
-        console.log(article);
         Comment.find({ article }, (err, resp) => {
             if (err) {
                 console.log(err);
@@ -64,7 +63,15 @@ export = {
                 .json({ status: 404, messege: "User not found!" });
         }
         const author = user.get("login");
-        const comment = new Comment({ author, article, content });
+        const authorID = user.get("signature");
+        const createdAt = new Date();
+        const comment = new Comment({
+            author,
+            article,
+            content,
+            createdAt,
+            authorID,
+        });
         const ID = sha256(`${config.idSalt}#${comment.get("_id")}`);
         comment.set("ID", ID);
         comment
