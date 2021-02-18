@@ -12,6 +12,7 @@ import messages from "./v0/middlewares/messages";
 import errorMiddleware from "./v0/middlewares/error";
 import articleRoute from "./v0/routes/articleRoute";
 import userRoute from "./v0/routes/userRoute";
+import adminRoute from "./v0/routes/adminRoute";
 import commentRoute from "./v0/routes/commentRoute";
 
 // [tmp]
@@ -53,6 +54,9 @@ app.use("/api/v0/articles", articleRoute);
 
 //? User route
 app.use("/api/v0/users", userRoute);
+
+//? Admin route
+app.use("/api/v0/admin", adminRoute);
 
 //? Comment route
 app.use("/api/v0/comments", commentRoute);

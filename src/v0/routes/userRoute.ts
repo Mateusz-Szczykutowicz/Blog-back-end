@@ -12,8 +12,14 @@ import recoverPassword from "../middlewares/recoverPassword";
 
 const router = express.Router();
 
+//? Get user role - GET /api/v0/users/isAdmin
+router.get("/isAdmin", auth.checkToken, userController.user.idAdmin);
+
+//? Get user role - GET /api/v0/users/isAdmin
+router.get("/", auth.checkToken, userController.user.getInfoAboutAccount);
+
 //? Register new user - POST /api/v0/users
-router.post("/", userController.registerUser);
+router.post("/", userController.user.registerUser);
 
 //? Login user - POST /api/v0/users/login
 router.post("/login", auth.createToken);
@@ -27,42 +33,13 @@ router.post("/recover", recoverPassword.sendLink);
 //? Change recover password - PATCH /api/v0/users/recover
 router.patch("/recover", recoverPassword.change);
 
-//? Get all users - GET /api/v0/users
-router.get("/admin", auth.checkToken, auth.isAdmin, userController.getAllUsers);
-
-//? Get one user via login - GET /api/v0/users/:user
-router.get(
-    "/admin/:user",
-    auth.checkToken,
-    auth.isAdmin,
-    userController.getOneUser
-);
-
 //? Change email - PATCH /api/v0/users/email
-router.patch("/email", auth.checkToken, userController.changeEmail);
+router.patch("/email", auth.checkToken, userController.user.changeEmail);
 
 //? Change password - PATCH /api/v0/users/password
-router.patch("/password", auth.checkToken, userController.changePassword);
-
-//? Delete one user - DELETE /api/v0/users/:user
-router.delete(
-    "/:user",
-    auth.checkToken,
-    auth.isAdmin,
-    userController.deleteOneUser
-);
+router.patch("/password", auth.checkToken, userController.user.changePassword);
 
 //? Delete account - DELETE /api/v0/users/
-router.delete("/", auth.checkToken, userController.deleteAccount);
-
-//? Block user - PATCH /api/v0/users/block
-router.patch(
-    "/:user/block",
-    auth.checkToken,
-    auth.isAdmin,
-    userController.blockAccount
-);
-
-router.get("/isAdmin", auth.checkToken, userController.idAdmin);
+router.delete("/", auth.checkToken, userController.user.deleteAccount);
 
 export = router;
